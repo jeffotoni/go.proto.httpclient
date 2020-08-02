@@ -2,13 +2,15 @@ package main
 
 import (
     "bytes"
-    "encoding/json"
+
     "fmt"
     "io"
     "log"
+
     "net/http"
     "os"
 
+    "github.com/golang/protobuf/proto"
     protoc "github.com/jeffotoni/go.protobuffer.customer"
 )
 
@@ -18,9 +20,13 @@ func main() {
         Name: "Carlos",
     }
 
-    buf := new(bytes.Buffer)
-    json.NewEncoder(buf).Encode(body)
-    req, err := http.NewRequest("POST", "localhost:8080/customer/proto", buf)
+    data, err := proto.Marshal(body)
+    if err != nil {
+        log.Println("proto.Marshal", err)
+        return
+    }
+
+    req, err := http.NewRequest("POST", "http://localhost:8080/customer/proto", bytes.NewBuffer(data))
     req.Header.Set("Content-Type", "application/proto")
 
     client := &http.Client{}
